@@ -77,15 +77,24 @@ fn main() {
 
     // Loop blocks and collect checkpoints until we run out
     let mut current_height = start_block;
+    let mut done_atleast_one = false;
     loop {
         // Fetch the matching block hash
         let hash = match client.getblockhash(current_height) {
             Ok(blockhash) => blockhash,
-            Err(_) => break println!("Checkpoints done!")
+            Err(_) => {
+                if done_atleast_one {
+                    println!("Checkpoints done!");
+                } else {
+                    println!("Nothing to checkpoint, your node may be offline or RPC details may be incorrect!");
+                }
+                break;
+            }
         };
 
         // Convert data to a checkpoint and log
         println!("{}", block_to_checkpoint(current_height, hash));
+        done_atleast_one = true;
 
         // Increment height for the next loop
         current_height += interval;
